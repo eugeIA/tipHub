@@ -82,20 +82,20 @@ export default async function CategoryPage({
         {(!tips || tips.length === 0) ? (
           <Card className="p-6 text-center">
             <p className="text-muted-foreground">
-              Aucun conseil n'a encore été publié dans cette catégorie.
+              Aucun conseil n{"'"}a encore été publié dans cette catégorie.
             </p>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tips.map((tip) => (
-              <Link key={tip.id} href={`/tips/${tip.id}`}>
+            {tips.map((tip: any) => (
+              <Link key={tip?.id} href={`/tips/${tip?.id}`}>
                 <Card className="p-6 hover:shadow-lg transition-shadow">
-                  <h3 className="font-semibold mb-2">{tip.title}</h3>
+                  <h3 className="font-semibold mb-2">{tip?.title}</h3>
                   <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
-                    {tip.content}
+                    {tip?.content}
                   </p>
                   <div className="flex items-center text-sm text-muted-foreground">
-                    <span>Par {tip.user.username} • {new Date(tip.created_at).toLocaleDateString("fr-FR")}</span>
+                    <span>Par {tip?.user?.username} • {new Date(tip?.created_at).toLocaleDateString("fr-FR")}</span>
                   </div>
                 </Card>
               </Link>

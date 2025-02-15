@@ -27,30 +27,29 @@ export const metadata: Metadata = {
 
 export async function generateStaticParams() {
   const supabase = createClient()
-  const { data: tips } = await supabase
-    .from("tips")
-    .select("id")
-    .eq("published", true)
+  
+  const { data: tips, error } = await supabase
+    .from('tips')
+    .select('*')
 
-  return (tips ?? []).map((tip) => ({
-    id: tip.id,
+  if (error) {
+    console.error('Erreur Supabase:', error)
+    return []
+  }
+
+  return tips?.map((tip: any) => ({
+    id: tip?.id?.toString() // Conversion explicite en string
   }))
 }
 
 export default async function TipPage({
   params
-}: {
-  params: { id: string }
-}) {
+}: any) {
   const supabase = createClient()
   const { data: tip } = await supabase
     .from("tips")
     .select(`
-      *,
-      user:users(username, avatar_url),
-      category_id,
-      votes(count),
-      comments(count)
+      *
     `)
     .eq("id", params.id)
     .eq("published", true)
@@ -60,8 +59,8 @@ export default async function TipPage({
     notFound()
   }
 
-  const Icon = categoryIcons[tip.category_id as keyof typeof categoryIcons] || ChefHat
-  const categoryName = categoryNames[tip.category_id as keyof typeof categoryNames] || "Autre"
+  const Icon = categoryIcons[tip?.category_id as keyof typeof categoryIcons] || ChefHat
+  const categoryName = categoryNames[tip?.category_id as keyof typeof categoryNames] || "Autre"
 
   return (
     <div className="min-h-screen bg-background">
@@ -73,12 +72,12 @@ export default async function TipPage({
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <h1 className="text-2xl md:text-3xl font-bold">{tip.title}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold">{tip?.title}</h1>
               </div>
               <div className="flex items-center space-x-2 mt-2 text-sm text-muted-foreground">
-                <span>Par {tip.user.username}</span>
+                <span>Par {tip?.user?.username}</span>
                 <span>•</span>
-                <span>{new Date(tip.created_at).toLocaleDateString("fr-FR")}</span>
+                <span>{new Date(tip?.created_at).toLocaleDateString("fr-FR")}</span>
                 <span>•</span>
                 <span>{categoryName}</span>
               </div>
@@ -86,13 +85,13 @@ export default async function TipPage({
           </div>
 
           <div className="prose dark:prose-invert max-w-none mb-8">
-            <p className="whitespace-pre-wrap">{tip.content}</p>
+            <p className="whitespace-pre-wrap">{tip?.content}</p>
           </div>
 
           <div className="flex items-center space-x-6 text-sm text-muted-foreground border-t pt-6">
             <div className="flex items-center space-x-2">
               <ThumbsUp className="w-4 h-4" />
-              <span>{tip.votes?.[0]?.count || 0} votes</span>
+              <span>{tip?.votes?.[0]?.count || 0} votes</span>
             </div>
             <div className="flex items-center space-x-2">
               <MessageSquare className="w-4 h-4" />

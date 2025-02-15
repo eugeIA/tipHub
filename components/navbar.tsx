@@ -11,9 +11,13 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { UserRound } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname()
+  const currentUser = JSON.parse(localStorage.getItem('userSession'))
+
+  console.log(currentUser)
 
   const NavLinks = () => (
     <>
@@ -58,18 +62,27 @@ export function Navbar() {
         {/* Boutons desktop */}
         <div className="ml-auto hidden md:flex items-center space-x-4">
           <ThemeToggle />
-          <Button variant="outline" size="sm" asChild>
+
+          {currentUser && <Button variant="outline" size="sm" asChild>
             <Link href="/tips/new">
               <Plus className="h-4 w-4 mr-2" />
               Nouveau conseil
             </Link>
-          </Button>
-          <Button variant="ghost" size="sm" asChild>
+          </Button>}
+
+          {currentUser && (
+            <div className="flex items-center space-x-2">
+              <UserRound />
+              <p>{currentUser?.username}</p>
+           </div>)
+          }
+
+         {!currentUser && <Button variant="ghost" size="sm" asChild>
             <Link href="/login">Connexion</Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link href="/signup">S'inscrire</Link>
-          </Button>
+          </Button>}
+          {!currentUser && <Button size="sm" asChild>
+            <Link href="/signup">S{"'"}inscrire</Link>
+          </Button>}
         </div>
 
         {/* Menu mobile */}
@@ -84,20 +97,32 @@ export function Navbar() {
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <nav className="flex flex-col space-y-4 mt-8">
                 <NavLinks />
-                <div className="flex flex-col space-y-3 pt-4 border-t">
+                {currentUser ? (
+                  <div className="flex flex-col space-y-3 pt-4 border-t">
                   <Button asChild>
                     <Link href="/tips/new">
                       <Plus className="h-4 w-4 mr-2" />
                       Nouveau conseil
                     </Link>
                   </Button>
-                  <Button variant="outline" asChild>
-                    <Link href="/login">Connexion</Link>
-                  </Button>
-                  <Button variant="secondary" asChild>
-                    <Link href="/signup">S'inscrire</Link>
-                  </Button>
                 </div>
+                ) : (
+                  <div className="flex flex-col space-y-3 pt-4 border-t">
+                    {/* <Button asChild>
+                      <Link href="/tips/new">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Nouveau conseil
+                      </Link>
+                    </Button> */}
+                    <Button variant="outline" asChild>
+                      <Link href="/login">Connexion</Link>
+                    </Button>
+                    <Button variant="secondary" asChild>
+                      <Link href="/signup">S{"'"}inscrire</Link>
+                    </Button>
+                  </div>
+                )}
+                
               </nav>
             </SheetContent>
           </Sheet>

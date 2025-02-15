@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -8,13 +10,68 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    // TODO: Implémenter la connexion avec Supabase
-  }
+  const router = useRouter()
+  const supabase = createClient()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+
+   // Vérifier l'existence d'une session au montage
+    useEffect(() => {
+      const session = localStorage.getItem("userSession")
+      if (session) {
+        router.push("/")
+      }
+    }, [])
+  
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault()
+      setLoading(true)
+      setError("")
+      console.log(username, password)
+  
+      try {
+        // 1. Création de l'utilisateur
+        const { data: userData, error: userError } = await supabase.rpc<any>('authenticate_user', {
+          p_username: username,
+          p_password: password,
+        });
+        // const { data: userData, error: userError } = await supabase
+        //   .from("users")
+        //   .insert([{
+        //     username: username,
+        //     email: email,
+        //     password: password,
+        //   }])
+        //   .select()
+  
+        if (userError) {
+          console.log(userError)
+          throw userError}
+  
+        // 2. Génération du token JWT
+        // const token = await generateJWT(userData[0].id)
+  
+        // 3. Stockage sécurisé dans localStorage
+        console.log(userData)
+        const sessionData = {
+          id: userData?.id,
+          username: userData?.username,
+          email: userData?.email,
+        }
+  
+        localStorage.setItem("userSession", JSON.stringify(sessionData))
+  
+        // 4. Redirection
+        router.push("/")
+  
+      } catch (err: any) {
+        setError(err?.message || "Erreur lors de l'inscription")
+        setLoading(false)
+      }
+    }
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex items-center justify-center bg-muted/50">
@@ -30,11 +87,11 @@ export default function LoginPage() {
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder="vous@exemple.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="username"
+              type="text"
+              placeholder="John Doe"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
@@ -50,8 +107,12 @@ export default function LoginPage() {
             />
           </div>
 
+          {error && (
+            <div className="text-red-500 text-sm text-center">{error}</div>
+          )}
+
           <Button type="submit" className="w-full">
-            Se connecter
+            {loading ? 'Connexion en cours' : "Se connecter"}
           </Button>
         </form>
 
@@ -59,7 +120,7 @@ export default function LoginPage() {
           <p className="text-muted-foreground">
             Pas encore de compte ?{" "}
             <Link href="/signup" className="text-primary hover:underline">
-              S'inscrire
+              S{"'"}inscrire
             </Link>
           </p>
         </div>
